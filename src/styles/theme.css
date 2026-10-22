@@ -1,0 +1,22 @@
+/* Palette d'automne de NatQuizz.
+   Toutes les couleurs de l'appli passent par ces variables :
+   pour changer l'ambiance, il suffit de les modifier ici. */
+:root {
+  --c-bg: #fbf6ee;            /* crème : fond */
+  --c-card: #f1e4d1;          /* beige : cartes */
+  --c-card-strong: #e6d2b5;   /* beige foncé : bordures, survol */
+  --c-text: #3e2c23;          /* brun écorce : texte */
+  --c-muted: #76604f;         /* brun clair : texte secondaire */
+  --c-primary: #c2581f;       /* rouille : couleur principale */
+  --c-primary-strong: #a6461a;/* rouille foncé : boutons (meilleur contraste) */
+  --c-accent: #d9a23a;        /* ocre : accent */
+  --c-success: #6b7f3a;       /* vert olive : réussite */
+  --c-danger: #8c2f39;        /* bordeaux : erreur */
+  --c-white: #fffdf9;
+
+  --radius: 14px;
+  --radius-small: 10px;
+  --shadow: 0 1px 2px rgb(62 44 35 / 8%), 0 4px 14px rgb(62 44 35 / 8%);
+  --nav-height: 64px;
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}

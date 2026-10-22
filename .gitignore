@@ -1,0 +1,19 @@
+# Dépendances et fichiers générés
+node_modules
+dist
+dev-dist
+*.tsbuildinfo
+
+# Clés locales (ne jamais les envoyer sur GitHub)
+.env.local
+.env.*.local
+
+# Divers
+*.log
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+
+# Réglages locaux de Claude Code
+.claude/
