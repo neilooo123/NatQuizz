@@ -8,7 +8,8 @@ export const isSupabaseConfigured = Boolean(url && key)
 
 // La clé « publishable » est publique par nature : ce sont les règles RLS
 // de la base (voir supabase/schema.sql) qui protègent les données.
-export const supabase = createClient(url ?? 'http://localhost:54321', key ?? 'non-configuree', {
+// (|| et non ?? : une variable vide arrive sous forme de texte vide "".)
+export const supabase = createClient(url || 'http://localhost:54321', key || 'non-configuree', {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
