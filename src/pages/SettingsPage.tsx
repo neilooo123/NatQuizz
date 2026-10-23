@@ -68,6 +68,22 @@ export function SettingsPage() {
       </form>
 
       <section className="card stack">
+        <h2 style={{ margin: 0 }}>Compte</h2>
+        <span className="muted">{user.email}</span>
+        {!localMode &&
+          (changingPassword ? (
+            <PasswordForm email={user.email} submitLabel="Changer le mot de passe" />
+          ) : (
+            <button type="button" className="btn" onClick={() => setChangingPassword(true)}>
+              Changer de mot de passe
+            </button>
+          ))}
+        <button type="button" className="btn btn-danger" onClick={handleSignOut}>
+          Se déconnecter
+        </button>
+      </section>
+
+      <section className="card stack">
         <h2 style={{ margin: 0 }}>Synchronisation</h2>
         {localMode ? (
           <p className="muted">Mode local : les données restent sur cet appareil.</p>
@@ -103,24 +119,8 @@ export function SettingsPage() {
 
       <InstallBanner dismissible={false} />
 
-      <section className="card stack">
-        <h2 style={{ margin: 0 }}>Compte</h2>
-        <span className="muted">{user.email}</span>
-        {!localMode &&
-          (changingPassword ? (
-            <PasswordForm email={user.email} submitLabel="Changer le mot de passe" />
-          ) : (
-            <button type="button" className="btn" onClick={() => setChangingPassword(true)}>
-              Changer de mot de passe
-            </button>
-          ))}
-        <button type="button" className="btn btn-danger" onClick={handleSignOut}>
-          Se déconnecter
-        </button>
-      </section>
-
       <p className="small muted" style={{ textAlign: 'center' }}>
-        NatQuizz · version 0.1
+        NatQuizz · version {__APP_VERSION__} du {new Date(__BUILD_DATE__).toLocaleString('fr-FR')}
       </p>
     </div>
   )

@@ -1,6 +1,9 @@
 import react from '@vitejs/plugin-react'
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
+
+const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string }
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -8,12 +11,18 @@ export default defineConfig({
   base: '/NatQuizz/',
   // L'appli est mise en cache sur le téléphone : un fichier JS un peu gros n'est pas gênant.
   build: { chunkSizeWarningLimit: 1000 },
+  // Numéro de version et date de publication, affichés dans les Réglages.
+  define: {
+    __APP_VERSION__: JSON.stringify(version),
+    __BUILD_DATE__: JSON.stringify(new Date().toISOString()),
+  },
   plugins: [
     react(),
     VitePWA({
-      // « prompt » : l'appli affiche un bandeau quand une nouvelle version est prête
-      // (pas de rechargement automatique qui effacerait un formulaire en cours).
-      registerType: 'prompt',
+      // « autoUpdate » : une nouvelle version s'installe toute seule en arrière-plan.
+      // L'appli ne se recharge pas d'elle-même (un formulaire en cours serait perdu) :
+      // elle affiche un bandeau « Recharger » (voir UpdateBanner).
+      registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon-180x180.png'],
       manifest: {
         name: 'NatQuizz',
