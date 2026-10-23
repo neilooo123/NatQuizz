@@ -299,6 +299,8 @@ a {
 
 .photo-large {
   width: 100%;
+  /* Place réservée avant le chargement : les boutons en dessous ne bougent pas. */
+  aspect-ratio: 4 / 3;
   max-height: 60vh;
   object-fit: contain;
   border-radius: var(--radius);
@@ -601,6 +603,22 @@ input[readonly] {
   font-weight: 800;
   color: var(--c-primary-strong);
   text-align: center;
+}
+
+.definition-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 140px;
+  justify-content: center;
+  background: var(--c-white);
+  border: 2px solid var(--c-card-strong);
+}
+
+.definition {
+  margin: 0;
+  font-size: 1.2rem;
+  line-height: 1.5;
 }
 
 .level-option {

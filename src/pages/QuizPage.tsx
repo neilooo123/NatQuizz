@@ -1,8 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useMemo, useState, type FormEvent } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import { Icon } from '../components/Icon'
 import { ObservationPhoto } from '../components/ObservationPhoto'
+import { QuizResults, QuizRunner, type QuizAnswer } from '../components/QuizRunner'
+import { QuizTabs, useQuizKind } from '../components/QuizTabs'
 import { CATEGORIES } from '../db/categories'
 import { getDb } from '../db/db'
 import {
@@ -14,18 +15,16 @@ import {
   type QuizQuestion,
   type QuizSpecies,
 } from '../quiz/generate'
-import { checkAnswer, type MatchResult } from '../quiz/match'
+import { VocabQuiz } from './VocabQuiz'
 
-interface Answer {
-  question: QuizQuestion
-  given: string
-  result: MatchResult
+export function QuizPage() {
+  return useQuizKind() === 'vocabulaire' ? <VocabQuiz /> : <SpeciesQuiz />
 }
 
 type Phase =
   | { name: 'setup' }
   | { name: 'play'; questions: QuizQuestion[] }
-  | { name: 'results'; questions: QuizQuestion[]; answers: Answer[] }
+  | { name: 'results'; answers: QuizAnswer<QuizQuestion>[] }
 
 /** Espèces avec au moins une photo disponible sur l'appareil (pour jouer hors ligne). */
 function useQuizSpecies(): QuizSpecies[] | undefined {
@@ -45,7 +44,7 @@ function useQuizSpecies(): QuizSpecies[] | undefined {
   })
 }
 
-export function QuizPage() {
+function SpeciesQuiz() {
   const allSpecies = useQuizSpecies()
   const [level, setLevel] = useState<QuizLevel>('facile')
   const [category, setCategory] = useState('')
@@ -66,11 +65,32 @@ export function QuizPage() {
 
   if (phase.name === 'play') {
     return (
-      <QuizPlay
+      <QuizRunner
         questions={phase.questions}
-        level={level}
-        speciesById={speciesById}
-        onFinish={(answers) => setPhase({ name: 'results', questions: phase.questions, answers })}
+        typing={level !== 'facile'}
+        title={level === 'difficile' ? 'Quel est son nom latin ?' : 'Quelle est cette espèce ?'}
+        placeholder={level === 'difficile' ? 'Genre espèce' : 'Nom vernaculaire'}
+        italicAnswer={level === 'difficile'}
+        renderPrompt={(q) => (
+          <ObservationPhoto key={q.observationId} observationId={q.observationId} kind="full" className="photo-large" alt="Quelle est cette espèce ?" />
+        )}
+        renderSolution={(q) => {
+          const species = speciesById.get(q.speciesId)
+          if (!species) return null
+          return (
+            <span>
+              C'était <strong>{species.vernacularName}</strong>
+              {species.latinName && (
+                <>
+                  {' '}
+                  (<span className="latin">{species.latinName}</span>)
+                </>
+              )}
+              .
+            </span>
+          )
+        }}
+        onFinish={(answers) => setPhase({ name: 'results', answers })}
         onQuit={() => setPhase({ name: 'setup' })}
       />
     )
@@ -81,7 +101,21 @@ export function QuizPage() {
     return (
       <QuizResults
         answers={phase.answers}
-        speciesById={speciesById}
+        renderMistake={(a) => {
+          const s = speciesById.get(a.question.speciesId)
+          return (
+            <div key={a.question.observationId} className="observation-card row" style={{ flexWrap: 'nowrap', gap: 0 }}>
+              <div style={{ width: 110, flexShrink: 0 }}>
+                <ObservationPhoto observationId={a.question.observationId} />
+              </div>
+              <div style={{ padding: '8px 12px' }}>
+                <strong>{s?.vernacularName}</strong>
+                {s?.latinName && <div className="latin small">{s.latinName}</div>}
+                <div className="small muted">Ta réponse : {a.given || '—'}</div>
+              </div>
+            </div>
+          )
+        }}
         onReplayMistakes={
           mistakes.length
             ? () => start(mistakes.map((a) => speciesById.get(a.question.speciesId)!).filter(Boolean), mistakes.length)
@@ -98,6 +132,7 @@ export function QuizPage() {
   return (
     <div className="stack">
       <h1>Quiz</h1>
+      <QuizTabs />
 
       <div className="stack" style={{ gap: 8 }}>
         {LEVELS.map((l) => (
@@ -144,8 +179,7 @@ export function QuizPage() {
         <div className="notice">Le niveau facile propose 4 noms : il faut au moins 4 espèces dans ta base.</div>
       ) : eligible.length < minimum ? (
         <div className="notice">
-          Pas encore assez d'espèces avec photo pour ce quiz.{' '}
-          <Link to="/observer">Ajoute une observation</Link> !
+          Pas encore assez d'espèces avec photo pour ce quiz. <Link to="/observer">Ajoute une observation</Link> !
         </div>
       ) : null}
 
@@ -157,193 +191,6 @@ export function QuizPage() {
       >
         C'est parti !
       </button>
-    </div>
-  )
-}
-
-interface PlayProps {
-  questions: QuizQuestion[]
-  level: QuizLevel
-  speciesById: Map<string, QuizSpecies>
-  onFinish: (answers: Answer[]) => void
-  onQuit: () => void
-}
-
-function QuizPlay({ questions, level, speciesById, onFinish, onQuit }: PlayProps) {
-  const [index, setIndex] = useState(0)
-  const [answers, setAnswers] = useState<Answer[]>([])
-  const [typed, setTyped] = useState('')
-  const question = questions[index]
-  const current: Answer | undefined = answers[index]
-  const species = speciesById.get(question.speciesId)
-  const score = answers.filter((a) => a.result !== 'wrong').length
-
-  function answer(given: string) {
-    if (current) return
-    const result: MatchResult = level === 'facile' ? (given === question.expected ? 'exact' : 'wrong') : checkAnswer(given, question.expected)
-    setAnswers([...answers, { question, given, result }])
-  }
-
-  function next() {
-    if (index + 1 >= questions.length) {
-      onFinish(answers)
-      return
-    }
-    setIndex(index + 1)
-    setTyped('')
-  }
-
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    if (current) next()
-    else if (typed.trim()) answer(typed)
-  }
-
-  return (
-    <div className="stack">
-      <div className="row">
-        <strong>
-          Question {index + 1} / {questions.length}
-        </strong>
-        <span className="spacer" />
-        <span className="badge">Score : {score}</span>
-        <button type="button" className="btn btn-small btn-outline" onClick={onQuit}>
-          Arrêter
-        </button>
-      </div>
-      <div className="progress">
-        <div style={{ width: `${((index + (current ? 1 : 0)) / questions.length) * 100}%` }} />
-      </div>
-
-      <ObservationPhoto key={question.observationId} observationId={question.observationId} kind="full" className="photo-large" alt="Quelle est cette espèce ?" />
-
-      <h2 style={{ margin: 0 }}>{level === 'difficile' ? 'Quel est son nom latin ?' : 'Quelle est cette espèce ?'}</h2>
-
-      {level === 'facile' ? (
-        <div className="choices">
-          {question.choices!.map((choice) => {
-            let tone = ''
-            if (current && choice === question.expected) tone = 'correct'
-            else if (current && choice === current.given) tone = 'wrong'
-            return (
-              <button key={choice} type="button" className={`choice ${tone}`} disabled={!!current} onClick={() => answer(choice)}>
-                {choice}
-              </button>
-            )
-          })}
-        </div>
-      ) : (
-        <form className="stack" onSubmit={handleSubmit}>
-          <input
-            value={typed}
-            onChange={(e) => setTyped(e.target.value)}
-            readOnly={!!current}
-            placeholder={level === 'difficile' ? 'Genre espèce' : 'Nom vernaculaire'}
-            autoComplete="off"
-            autoCapitalize="off"
-            autoCorrect="off"
-            spellCheck={false}
-            autoFocus
-            style={{ fontStyle: level === 'difficile' ? 'italic' : undefined }}
-          />
-          {!current && (
-            <button className="btn btn-primary" disabled={!typed.trim()}>
-              Valider
-            </button>
-          )}
-        </form>
-      )}
-
-      {current && (
-        <div className={`notice ${current.result === 'wrong' ? 'error' : 'success'} stack`} style={{ gap: 4 }}>
-          <strong>
-            {current.result === 'exact' && 'Bravo ! 🎉'}
-            {current.result === 'close' && 'Presque parfait ! Petite faute acceptée.'}
-            {current.result === 'wrong' && 'Raté…'}
-          </strong>
-          {species && (
-            <span>
-              C'était <strong>{species.vernacularName}</strong>
-              {species.latinName && (
-                <>
-                  {' '}
-                  (<span className="latin">{species.latinName}</span>)
-                </>
-              )}
-              .
-            </span>
-          )}
-        </div>
-      )}
-
-      {current && (
-        <button type="button" className="btn btn-primary btn-block" onClick={next} autoFocus>
-          {index + 1 >= questions.length ? 'Voir mon score' : 'Question suivante'}
-        </button>
-      )}
-    </div>
-  )
-}
-
-interface ResultsProps {
-  answers: Answer[]
-  speciesById: Map<string, QuizSpecies>
-  onReplayMistakes?: () => void
-  onReplay: () => void
-  onSetup: () => void
-}
-
-function QuizResults({ answers, speciesById, onReplayMistakes, onReplay, onSetup }: ResultsProps) {
-  const score = answers.filter((a) => a.result !== 'wrong').length
-  const ratio = answers.length ? score / answers.length : 0
-  const mistakes = answers.filter((a) => a.result === 'wrong')
-  const message =
-    ratio === 1 ? 'Sans faute, bravo ! 🏆' : ratio >= 0.7 ? 'Très bien ! 🍁' : ratio >= 0.4 ? 'Pas mal, continue ! 🌱' : 'Courage, ça viendra ! 🌰'
-
-  return (
-    <div className="stack">
-      <h1>Résultat</h1>
-      <div className="card stack" style={{ alignItems: 'center' }}>
-        <div className="score">
-          {score} / {answers.length}
-        </div>
-        <strong>{message}</strong>
-      </div>
-
-      {mistakes.length > 0 && (
-        <section className="stack">
-          <h2 style={{ margin: 0 }}>À revoir</h2>
-          {mistakes.map((a) => {
-            const s = speciesById.get(a.question.speciesId)
-            return (
-              <div key={a.question.observationId} className="observation-card row" style={{ flexWrap: 'nowrap', gap: 0 }}>
-                <div style={{ width: 110, flexShrink: 0 }}>
-                  <ObservationPhoto observationId={a.question.observationId} />
-                </div>
-                <div style={{ padding: '8px 12px' }}>
-                  <strong>{s?.vernacularName}</strong>
-                  {s?.latinName && <div className="latin small">{s.latinName}</div>}
-                  <div className="small muted">Ta réponse : {a.given || '—'}</div>
-                </div>
-              </div>
-            )
-          })}
-        </section>
-      )}
-
-      {onReplayMistakes && (
-        <button type="button" className="btn btn-primary btn-block" onClick={onReplayMistakes}>
-          <Icon name="refresh" /> Rejouer mes erreurs
-        </button>
-      )}
-      <div className="row">
-        <button type="button" className="btn" style={{ flex: 1 }} onClick={onReplay}>
-          Rejouer
-        </button>
-        <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={onSetup}>
-          Changer de quiz
-        </button>
-      </div>
     </div>
   )
 }
