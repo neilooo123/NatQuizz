@@ -1,5 +1,4 @@
-// Déroulé commun à tous les quiz (espèces, vocabulaire) :
-// une question à la fois, correction immédiate, puis le score.
+// Déroulé d'un quiz : une question à la fois, correction immédiate, puis le score.
 
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { checkAnswer, type MatchResult } from '../quiz/match'

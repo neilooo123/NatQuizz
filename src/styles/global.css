@@ -605,22 +605,6 @@ input[readonly] {
   text-align: center;
 }
 
-.definition-card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-height: 140px;
-  justify-content: center;
-  background: var(--c-white);
-  border: 2px solid var(--c-card-strong);
-}
-
-.definition {
-  margin: 0;
-  font-size: 1.2rem;
-  line-height: 1.5;
-}
-
 .level-option {
   display: flex;
   align-items: flex-start;

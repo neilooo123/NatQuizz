@@ -18,8 +18,6 @@ flore**. Ensuite, on révise avec des **quiz**.
   - *Difficile* : une photo, on écrit le nom latin.
 
   Les petites fautes de frappe sont tolérées. On peut rejouer ses erreurs.
-- **Quiz de vocabulaire nature** : on lit une définition et on retrouve le mot, parmi 4
-  propositions (*Facile*) ou en l'écrivant (*Moyen*). Filtre par thème.
 - **Partage** : un QR code (ou un lien) pour donner une fiche à quelqu'un. Le texte passe
   même sans réseau, la photo suit dès qu'il y en a.
 - **Hors ligne** : l'appli fonctionne en pleine nature, sans réseau. Les données sont
@@ -88,14 +86,6 @@ développement) pour essayer l'appli sans compte.
 > conservées : il suffit de le réactiver depuis le tableau de bord Supabase. Pendant la pause,
 > l'appli continue de fonctionner hors ligne.
 
-### Modifier le vocabulaire
-
-La liste du quiz de vocabulaire est le fichier [`src/vocab/vocabulaire.tsv`](src/vocab/vocabulaire.tsv) :
-une ligne par mot, colonnes séparées par une **tabulation** : le mot, la définition, le ou les
-thèmes séparés par « ; », puis la source (facultative). Le plus simple : copier les colonnes
-depuis Excel ou Google Sheets et les coller dans ce fichier (le copier-coller depuis un tableur
-met déjà des tabulations). Les tests vérifient que le fichier est lisible avant chaque publication.
-
 ### Organisation du code
 
 ```
@@ -110,8 +100,7 @@ src/
 ├─ quiz/        tolérance aux fautes, génération des questions
 ├─ share/       liens de partage, QR codes
 ├─ styles/      thème (couleurs d'automne) et styles
-├─ sync/        synchronisation avec Supabase
-└─ vocab/       liste de vocabulaire (vocabulaire.tsv) et sa lecture
+└─ sync/        synchronisation avec Supabase
 ```
 
 **Principe « local d'abord »** : l'appli lit et écrit toujours dans la base de l'appareil.

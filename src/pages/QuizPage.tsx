@@ -3,7 +3,6 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { ObservationPhoto } from '../components/ObservationPhoto'
 import { QuizResults, QuizRunner, type QuizAnswer } from '../components/QuizRunner'
-import { QuizTabs, useQuizKind } from '../components/QuizTabs'
 import { CATEGORIES } from '../db/categories'
 import { getDb } from '../db/db'
 import {
@@ -15,11 +14,6 @@ import {
   type QuizQuestion,
   type QuizSpecies,
 } from '../quiz/generate'
-import { VocabQuiz } from './VocabQuiz'
-
-export function QuizPage() {
-  return useQuizKind() === 'vocabulaire' ? <VocabQuiz /> : <SpeciesQuiz />
-}
 
 type Phase =
   | { name: 'setup' }
@@ -44,7 +38,7 @@ function useQuizSpecies(): QuizSpecies[] | undefined {
   })
 }
 
-function SpeciesQuiz() {
+export function QuizPage() {
   const allSpecies = useQuizSpecies()
   const [level, setLevel] = useState<QuizLevel>('facile')
   const [category, setCategory] = useState('')
@@ -132,7 +126,6 @@ function SpeciesQuiz() {
   return (
     <div className="stack">
       <h1>Quiz</h1>
-      <QuizTabs />
 
       <div className="stack" style={{ gap: 8 }}>
         {LEVELS.map((l) => (
