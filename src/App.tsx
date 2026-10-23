@@ -2,7 +2,10 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { HashRouter, Navigate, Route, Routes } from 'react-router'
 import { AuthProvider, useAuth } from './auth/AuthProvider'
 import { LoginPage } from './auth/LoginPage'
+import { NewPasswordPage } from './auth/NewPasswordPage'
+import { useRecovering } from './auth/recovery'
 import { Layout } from './components/Layout'
+import { UpdateBanner } from './components/UpdateBanner'
 import { openUserDb } from './db/db'
 import { isSupabaseConfigured } from './lib/supabase'
 import { EditObservationPage } from './pages/EditObservationPage'
@@ -25,6 +28,7 @@ export default function App() {
       <HashRouter>
         <Gate />
       </HashRouter>
+      <UpdateBanner />
     </AuthProvider>
   )
 }
@@ -32,8 +36,10 @@ export default function App() {
 /** Choisit quoi afficher : configuration manquante, connexion, ou l'appli. */
 function Gate() {
   const { user, loading } = useAuth()
+  const recovering = useRecovering()
 
   if (!isSupabaseConfigured && !import.meta.env.DEV) return <ConfigMissing />
+  if (recovering) return <NewPasswordPage />
   if (loading && !user) return <Splash />
   if (!user) return <LoginPage />
   // key : tout est recréé si un autre utilisateur se connecte.

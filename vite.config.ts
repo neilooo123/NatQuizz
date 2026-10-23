@@ -11,7 +11,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // « prompt » : l'appli affiche un bandeau quand une nouvelle version est prête
+      // (pas de rechargement automatique qui effacerait un formulaire en cours).
+      registerType: 'prompt',
       includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon-180x180.png'],
       manifest: {
         name: 'NatQuizz',

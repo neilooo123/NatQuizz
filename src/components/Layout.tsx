@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
+import { ErrorBoundary } from './ErrorBoundary'
 import { Icon, type IconName } from './Icon'
 import { SyncIndicator } from './SyncIndicator'
 
@@ -15,7 +16,11 @@ const NAV: { to: string; label: string; icon: IconName; main?: boolean }[] = [
 export function Layout() {
   const { pathname } = useLocation()
   // Chaque nouvelle page s'affiche en partant du haut.
-  useEffect(() => window.scrollTo(0, 0), [pathname])
+  // (Accolades obligatoires : un effet ne doit rien renvoyer d'autre qu'une
+  // fonction de nettoyage, or scrollTo renvoie une promesse dans les navigateurs récents.)
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
 
   return (
     <>
@@ -28,7 +33,10 @@ export function Layout() {
       </header>
 
       <main className="page">
-        <Outlet />
+        {/* key : l'erreur éventuelle est oubliée dès qu'on change de page. */}
+        <ErrorBoundary key={pathname}>
+          <Outlet />
+        </ErrorBoundary>
       </main>
 
       <nav className="bottom-nav" aria-label="Navigation principale">

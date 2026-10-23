@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useAuth, useUser } from '../auth/AuthProvider'
+import { PasswordForm } from '../auth/PasswordForm'
 import { Icon } from '../components/Icon'
 import { InstallBanner } from '../components/InstallBanner'
 import { usePendingCount } from '../db/hooks'
@@ -19,6 +20,7 @@ export function SettingsPage() {
   const [name, setName] = useState(user.observerName)
   const [nameMessage, setNameMessage] = useState<{ text: string; error?: boolean } | null>(null)
   const [storage, setStorage] = useState<StorageInfo>({ usedMb: null, persisted: null })
+  const [changingPassword, setChangingPassword] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -104,6 +106,14 @@ export function SettingsPage() {
       <section className="card stack">
         <h2 style={{ margin: 0 }}>Compte</h2>
         <span className="muted">{user.email}</span>
+        {!localMode &&
+          (changingPassword ? (
+            <PasswordForm email={user.email} submitLabel="Changer le mot de passe" />
+          ) : (
+            <button type="button" className="btn" onClick={() => setChangingPassword(true)}>
+              Changer de mot de passe
+            </button>
+          ))}
         <button type="button" className="btn btn-danger" onClick={handleSignOut}>
           Se déconnecter
         </button>
