@@ -20,11 +20,38 @@ describe('parseVocabulary', () => {
   })
 
   it('découpe les thèmes et retire les guillemets et espaces', () => {
-    expect(words[1]).toEqual({ word: 'Sève', definition: 'Liquide qui circule dans les plantes.', themes: ['Botanique', 'arbres'] })
+    expect(words[1]).toEqual({
+      word: 'Sève',
+      definition: 'Liquide qui circule dans les plantes.',
+      themes: ['Botanique', 'arbres'],
+      source: '',
+    })
   })
 
   it('accepte un mot sans thème', () => {
     expect(words[2].themes).toEqual([])
+  })
+
+  it('lit la colonne source et un en-tête « Nom / Définition »', () => {
+    const table = [
+      'Nom\tDéfinition\tThème\tSources',
+      'Chiroptère \t« Qui vole avec ses mains ». Cela désigne les chauves-souris.\tChiroptères\tOFB formation',
+      'Ubiquiste\tEspèce qui occupe des niches écologiques diverses.\tGénéral ; Chiroptères\tOFB formation',
+    ].join('\n')
+    expect(parseVocabulary(table)).toEqual([
+      {
+        word: 'Chiroptère',
+        definition: '« Qui vole avec ses mains ». Cela désigne les chauves-souris.',
+        themes: ['Chiroptères'],
+        source: 'OFB formation',
+      },
+      {
+        word: 'Ubiquiste',
+        definition: 'Espèce qui occupe des niches écologiques diverses.',
+        themes: ['Général', 'Chiroptères'],
+        source: 'OFB formation',
+      },
+    ])
   })
 })
 

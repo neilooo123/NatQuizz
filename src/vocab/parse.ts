@@ -4,6 +4,8 @@ export interface VocabWord {
   word: string
   definition: string
   themes: string[]
+  /** D'où vient la définition (formation, livre…) ; peut être vide. */
+  source: string
 }
 
 /** Retire les guillemets ajoutés par certains tableurs autour d'une cellule. */
@@ -16,7 +18,7 @@ function cleanCell(cell: string): string {
 
 /**
  * Lit le tableau de vocabulaire : une ligne par mot, colonnes séparées par
- * une tabulation (mot, définition, thèmes séparés par « ; »).
+ * une tabulation (mot, définition, thèmes séparés par « ; », source facultative).
  * La ligne d'en-tête, les lignes vides et les doublons sont ignorés.
  */
 export function parseVocabulary(text: string): VocabWord[] {
@@ -24,9 +26,10 @@ export function parseVocabulary(text: string): VocabWord[] {
   const seen = new Set<string>()
 
   for (const line of text.split(/\r?\n/)) {
-    const [word = '', definition = '', themes = ''] = line.split('\t').map(cleanCell)
+    const [word = '', definition = '', themes = '', source = ''] = line.split('\t').map(cleanCell)
     if (!word || !definition) continue
-    if (normalize(word) === 'mot' && normalize(definition) === 'definition') continue
+    // Ligne d'en-tête (« Mot » ou « Nom », « Définition »…).
+    if (normalize(definition) === 'definition') continue
 
     const key = normalize(word)
     if (seen.has(key)) continue
@@ -39,6 +42,7 @@ export function parseVocabulary(text: string): VocabWord[] {
         .split(';')
         .map((t) => t.trim())
         .filter(Boolean),
+      source,
     })
   }
   return words

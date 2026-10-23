@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { VocabWord } from '../vocab/parse'
 import { buildVocabQuiz } from './vocabQuiz'
 
-const word = (w: string, themes: string[]): VocabWord => ({ word: w, definition: `Définition de ${w}`, themes })
+const word = (w: string, themes: string[]): VocabWord => ({ word: w, definition: `Définition de ${w}`, themes, source: '' })
 
 const pool: VocabWord[] = [
   word('Canopée', ['Forêt']),

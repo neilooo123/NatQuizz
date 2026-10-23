@@ -12,6 +12,21 @@ type Phase =
 
 const THEMES = listThemes(VOCABULARY)
 
+/** Thèmes et source d'un mot, affichés une fois la réponse donnée. */
+function WordDetails({ word }: { word: VocabWord }) {
+  if (!word.themes.length && !word.source) return null
+  return (
+    <div className="row small">
+      {word.themes.map((t) => (
+        <span key={t} className="badge">
+          {t}
+        </span>
+      ))}
+      {word.source && <span className="muted">Source : {word.source}</span>}
+    </div>
+  )
+}
+
 /** Quiz de vocabulaire nature : retrouver le mot à partir de sa définition. */
 export function VocabQuiz() {
   const [level, setLevel] = useState<VocabLevel>('facile')
@@ -35,24 +50,20 @@ export function VocabQuiz() {
         title="Quel est ce mot ?"
         placeholder="Le mot"
         renderPrompt={(q) => (
+          // Les thèmes ne sont montrés qu'après la réponse : ils peuvent la trahir
+          // (thème « Chiroptères » pour le mot « Chiroptère »).
           <div className="card definition-card">
             <span className="small muted">Définition</span>
             <p className="definition">{q.word.definition}</p>
-            {q.word.themes.length > 0 && (
-              <div className="row">
-                {q.word.themes.map((t) => (
-                  <span key={t} className="badge">
-                    {t}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
         )}
         renderSolution={(q) => (
-          <span>
-            C'était <strong>{q.word.word}</strong>.
-          </span>
+          <>
+            <span>
+              C'était <strong>{q.word.word}</strong>.
+            </span>
+            <WordDetails word={q.word} />
+          </>
         )}
         onFinish={(answers) => setPhase({ name: 'results', answers })}
         onQuit={() => setPhase({ name: 'setup' })}
@@ -70,6 +81,7 @@ export function VocabQuiz() {
             <strong>{a.question.word.word}</strong>
             <span className="small">{a.question.word.definition}</span>
             <span className="small muted">Ta réponse : {a.given || '—'}</span>
+            <WordDetails word={a.question.word} />
           </div>
         )}
         onReplayMistakes={mistakes.length ? () => start(mistakes.map((a) => a.question.word), mistakes.length) : undefined}

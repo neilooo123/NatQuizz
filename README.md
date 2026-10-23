@@ -91,10 +91,10 @@ développement) pour essayer l'appli sans compte.
 ### Modifier le vocabulaire
 
 La liste du quiz de vocabulaire est le fichier [`src/vocab/vocabulaire.tsv`](src/vocab/vocabulaire.tsv) :
-une ligne par mot, trois colonnes séparées par une **tabulation** : le mot, la définition, puis
-le ou les thèmes séparés par « ; ». Le plus simple : copier les trois colonnes depuis Excel ou
-Google Sheets et les coller dans ce fichier (le copier-coller depuis un tableur met déjà des
-tabulations). Les tests vérifient que le fichier est lisible avant chaque publication.
+une ligne par mot, colonnes séparées par une **tabulation** : le mot, la définition, le ou les
+thèmes séparés par « ; », puis la source (facultative). Le plus simple : copier les colonnes
+depuis Excel ou Google Sheets et les coller dans ce fichier (le copier-coller depuis un tableur
+met déjà des tabulations). Les tests vérifient que le fichier est lisible avant chaque publication.
 
 ### Organisation du code
 
@@ -110,7 +110,8 @@ src/
 ├─ quiz/        tolérance aux fautes, génération des questions
 ├─ share/       liens de partage, QR codes
 ├─ styles/      thème (couleurs d'automne) et styles
-└─ sync/        synchronisation avec Supabase
+├─ sync/        synchronisation avec Supabase
+└─ vocab/       liste de vocabulaire (vocabulaire.tsv) et sa lecture
 ```
 
 **Principe « local d'abord »** : l'appli lit et écrit toujours dans la base de l'appareil.
